@@ -1,0 +1,8 @@
+# http fan vars
+app_name: dflt_name
+app_user: user
+app_static_files_path: /home/{{ app_user }}/web_apps/{{ app_name }}
+fan_in_address: 0.0.0.0
+fan_in_port: 5000
+backends:
+  - {address: 127.0.0.1, port: 8000}

@@ -1,0 +1,9 @@
+# app worker handlers
+- name: restart supervisor
+  # TODO: proxy must find it's peers itself
+  notify:
+    - restart nginx
+  command: supervisorctl update && supervisorctl restart {{ app_name }}
+
+- name: restart nginx
+  service: name=nginx state=restarted

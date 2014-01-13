@@ -1,0 +1,17 @@
+# playbook for admin servers
+- hosts: admin-servers
+  remote_user: root
+  # overriding roles' defaults
+  vars:
+    app_name: admin
+    # only for ssh cloning
+    #app_repo_host: 
+    app_repo: https://github.com/twil/catalog-backend.git
+    app_to_run: "app_admin:app"
+    app_port: 8001
+    fan_in_port: 5001
+    backends:
+      - {address: 127.0.0.1, port: 8001}
+  roles:
+    - appworker
+    - httpfan

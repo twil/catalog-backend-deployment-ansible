@@ -1,0 +1,9 @@
+# dbserver tasks
+- name: we need mongo
+  apt: pkg=mongodb-server state=installed
+  apt: pkg=mongodb state=installed
+
+#- name: configure DB auth
+
+- name: run and enable mongodb server
+  service: name=mongodb state=running enabled=yes

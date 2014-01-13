@@ -1,0 +1,67 @@
+# app worker tasks 
+- name: we need supervisord to run (and rerun in case of failure) app
+  apt: pkg=supervisor state=installed
+
+- name: we need special user for app
+  user: name={{ app_user }}
+
+- name: folder for app
+  sudo: yes
+  sudo_user: "{{ app_user }}"
+  file: path=/home/{{ app_user }}/web_apps state=directory
+
+# only for ssh
+# TODO: overriding file constantly
+# TODO: what is 'accept_hostkey' in git module???
+#- name: add repo host as known
+#  raw: ssh-keyscan {{ app_repo_host }} > /etc/ssh/ssh_known_hosts
+
+- name: clone app repo
+  sudo: yes
+  sudo_user: "{{ app_user }}"
+  git: repo={{ app_repo }}
+       dest=/home/{{ app_user }}/web_apps/{{ app_name }}
+       force=yes
+
+- name: install build-essential
+  apt: pkg=build-essential state=installed
+- name: install setuptools
+  apt: pkg=python-setuptools state=installed
+- name: install pip
+  command: easy_install pip
+- name: install virtualenv
+  command: pip install virtualenv virtualenvwrapper
+
+- name: stop app {{ app_name }}
+  command: supervisorctl stop {{ app_name }}
+  ignore_errors: True
+
+# TODO: I know about pip module
+- name: prepare virtualenv for app
+  sudo: yes
+  sudo_user: "{{ app_user }}"
+  raw: source virtualenvwrapper.sh && mkvirtualenv {{ app_name }}_env
+- name: install requirements
+  sudo: yes
+  sudo_user: "{{ app_user }}"
+  raw: source virtualenvwrapper.sh &&
+       workon {{ app_name }}_env &&
+       pip install -r /home/{{ app_user }}/web_apps/{{ app_name }}/requirements.txt
+           --allow-external twill --allow-unverified twill
+
+- name: configure supervisor for app
+  template: src=supervisor.conf dest=/etc/supervisor/conf.d/{{ app_name }}.conf
+  #notify:
+  #  - restart supervisor
+
+- name: run and enable supervisor
+  service: name=supervisor state=running enabled=yes
+
+- name: update supervisor config
+  command: supervisorctl update
+
+- name: run app {{ app_name }}
+  # TODO: proxy must find it's peers itself
+  notify:
+    - restart nginx
+  command: supervisorctl restart {{ app_name }}

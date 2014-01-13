@@ -1,0 +1,4 @@
+# master playbook
+- include: dbservers.yml
+- include: mobile-servers.yml
+- include: admin-servers.yml 

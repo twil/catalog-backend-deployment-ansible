@@ -1,0 +1,16 @@
+# playbook for mobile servers
+- hosts: mobile-servers
+  remote_user: root
+  # overriding roles' defaults
+  vars:
+    app_name: mobile
+    # only for ssh cloning
+    #app_repo_host: 
+    app_repo: https://github.com/twil/catalog-backend.git
+    app_to_run: "app_mobile:app"
+    app_port: 8000
+    #backends:
+    #  - {address: 127.0.0.1, port: 8000}
+  roles:
+    - appworker
+    - httpfan
